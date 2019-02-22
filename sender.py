@@ -46,13 +46,6 @@ for net in nets:
         print('WLAN connection succeeded!')
         break
 
-import urequests as requests
-URL = "http://192.168.43.227:3333/map/polygon?"
-print("Sending request")
-r = requests.get(URL)
-print(r.content)
-r.close()
-
 # config for LORA network
 lora = LoRa(mode=LoRa.LORA, tx_iq=True, region=LoRa.EU868)
 lora_sock = socket.socket(socket.AF_LORA, socket.SOCK_RAW)

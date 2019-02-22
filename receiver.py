@@ -16,6 +16,9 @@ lora_sock = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 
 lora_sock.setblocking(False)
 
+import urequests as requests
+URL = "http://192.168.43.227:3333/lopy?"
+
 while (True):
    recv_pkg = lora_sock.recv(512)
    # check if data received has any message
@@ -24,6 +27,15 @@ while (True):
        # unpack to regular python strings
        device_id, pkg_len, msg = struct.unpack(_LORA_PKG_FORMAT % recv_pkg_len, recv_pkg)
        print('Device: %d - Pkg:  %s' % (device_id, msg))
+
+       gps = msg.split(":")[0]
+       gps1 = gps[1:]
+       gps2 = gps1[:-1]
+       new_url = "{}coord={}".format(URL, gps2)
+
+       r = requests.get(URL)
+       r.close()
+
        # pack to send back data was received
        ack_pkg = struct.pack(_LORA_PKG_ACK_FORMAT, device_id, 1, STATUS_CODE_GOOD)
        lora_sock.send(ack_pkg)
