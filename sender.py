@@ -25,11 +25,33 @@ def get_gps_data():
 
 # return accelerometer data in str format ((x,y,z), pitch, roll)
 def get_acc_data():
-    acceleration = acc.acceleration();
+    x,y,z = acc.acceleration();
     pitch = acc.pitch()
     roll = acc.roll()
-    acc_str = "{}".format((acc, pitch, roll))
+    acc_str = "{}-{}".format((x,y,z), (pitch, roll))
     return acc_str
+
+# connect to local wifi
+from network import WLAN
+import machine
+wlan = WLAN(mode=WLAN.STA)
+
+nets = wlan.scan()
+for net in nets:
+    if net.ssid == 'OnePlus 6T':
+        print('Network found!')
+        wlan.connect(net.ssid, auth=('12345678'), timeout=5000)
+        while not wlan.isconnected():
+            machine.idle() # save power while waiting
+        print('WLAN connection succeeded!')
+        break
+
+import urequests as requests
+URL = "http://192.168.43.227:3333/map/polygon?"
+print("Sending request")
+r = requests.get(URL)
+print(r.content)
+r.close()
 
 # config for LORA network
 lora = LoRa(mode=LoRa.LORA, tx_iq=True, region=LoRa.EU868)
@@ -59,14 +81,14 @@ while(True):
 
         if (len(received_mes) > 0):
             # unpack into regular python strings
-            device_id, pkg_len, status_code = struct.unpack(_LORA_PKG_ACK_FORMAT, received_mes
+            device_id, pkg_len, status_code = struct.unpack(_LORA_PKG_ACK_FORMAT, received_mes)
             # check if message from this device
             if (device_id == DEVICE_ID):
                 if (status_code == 250):
                     isSent = True
-                    print("Sent" + status_code)
+                    print("Sent {}".format(status_code))
                 else:
                     isSent = True
-                    print("Message Failed")
+                    print("Message Failed {}".format(status_code))
 
     time.sleep(TIME_INTERVAL)
